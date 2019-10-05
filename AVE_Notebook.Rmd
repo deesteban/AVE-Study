@@ -42,4 +42,20 @@ shapiro.test(renfeDF$price[1:5000])
 ```
 Podemos asumir que los datos no se asemejan a una normal ya que el p-value obtenido del test de Shapiro-Wilkinson es menor que 0.05
 
+Ahora vamos a modificar los datos usando una transformacion logaritmica para ver si conseguimos que se asemeje a una distribucion normal.
 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(fitdistrplus)
+logPrice <- log(renfeDF$price)
+descdist(logPrice)
+```
+
+Al hacer la transformacion de los datos podemos ver que los datos ahora se asemejan a una normal tras realizar una transformacion logaritmica sobre el precio. Ahora mostramos un histograma sobre los datos transformados para ver como se asemeja a una curva normal.
+
+```{r}
+library(rcompanion)
+plotNormalHistogram(logPrice)
+```
+
+Podemos ver que excepto un par de valores que sobresalen por la curva normal, el conjunto de datos se comporta como una curva normal.
