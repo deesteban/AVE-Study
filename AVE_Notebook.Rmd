@@ -3,37 +3,43 @@ title: "AVE_Notebook"
 output: html_notebook
 ---
 
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(dplyr)
 renfeDF <- read.csv(file = "~/Documents/GitHub/AVE-Study/renfe.csv")
 renfeDF <- na.omit(renfeDF) 
+renfeDF <- filter(renfeDF, price != 0)
 attach(renfeDF)
 ```
 
 ```{r}
 library(psych)
-attach(renfeDF)
 describe(price)
 ```
 
+En este primer analisis podemos determinar la media, mediana, deviacion estandar, kurtosis y el rango de los datos sin discriminar ninguna variable cualitativa. Podemos ver que la mediana de los precios es 58,15 Euros y que el maximo de todos los datos es 342 Euros.
 
 ```{r}
-library(psych)
 describeBy(renfeDF$price, renfeDF$train_type)
 ```
 
 
 ```{r}
-library(psych)
 describeBy(renfeDF$price, renfeDF$train_class)
 ```
+
+A continuacion vamos a utilizar la libreria fitdistrplus para ver si los datos se pueden asemejar a una distribucion de datos conocida. Para eso utilizamos el comando descdist que nos presenta un grafico de Cullen y Frey.
 
 ```{r}
 library(fitdistrplus)
 descdist(renfeDF$price)
 ```
 
+Vemos que los datos se podrian asemejar a una lognormal o incluso a una distribucion gamma. Vamos a decidir numericamente si los datos se pueden asemejar a una distribucion normal usando el test de Shapiro-Wilkinson.
+
 ```{r}
 library(fitdistrplus)
 shapiro.test(renfeDF$price[1:5000])
 ```
+Podemos asumir que los datos no se asemejan a una normal ya que el p-value obtenido del test de Shapiro-Wilkinson es menor que 0.05
+
 
