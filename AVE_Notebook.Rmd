@@ -1,6 +1,8 @@
 ---
 title: "AVE_Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
@@ -29,14 +31,14 @@ describeBy(renfeDF$price, renfeDF$train_class)
 
 A continuacion vamos a utilizar la libreria fitdistrplus para ver si los datos se pueden asemejar a una distribucion de datos conocida. Para eso utilizamos el comando descdist que nos presenta un grafico de Cullen y Frey.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(fitdistrplus)
 descdist(renfeDF$price)
 ```
 
 Vemos que los datos se podrian asemejar a una lognormal o incluso a una distribucion gamma. Vamos a decidir numericamente si los datos se pueden asemejar a una distribucion normal usando el test de Shapiro-Wilkinson.
 
-```{r}
+```{r warning=FALSE}
 library(fitdistrplus)
 shapiro.test(renfeDF$price[1:5000])
 ```
@@ -53,7 +55,7 @@ descdist(logPrice)
 
 Al hacer la transformacion de los datos podemos ver que los datos ahora se asemejan a una normal tras realizar una transformacion logaritmica sobre el precio. Ahora mostramos un histograma sobre los datos transformados para ver como se asemeja a una curva normal.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(rcompanion)
 plotNormalHistogram(logPrice)
 ```
