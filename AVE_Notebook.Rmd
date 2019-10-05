@@ -11,19 +11,19 @@ renfeDF <- filter(renfeDF, price != 0)
 attach(renfeDF)
 ```
 
-```{r}
+```{r paged.print=TRUE}
 library(psych)
 describe(price)
 ```
 
 En este primer analisis podemos determinar la media, mediana, deviacion estandar, kurtosis y el rango de los datos sin discriminar ninguna variable cualitativa. Podemos ver que la mediana de los precios es 58,15 Euros y que el maximo de todos los datos es 342 Euros.
 
-```{r}
+Vamos a empezar a analizar las variables categoricas de los datos, analizando el precio en funcion del tipo de asiento (Turista, Preferente, Cama, ...)
+
+```{r paged.print=FALSE}
 describeBy(renfeDF$price, renfeDF$train_type)
 ```
-
-
-```{r}
+```{r paged.print=FALSE}
 describeBy(renfeDF$price, renfeDF$train_class)
 ```
 
