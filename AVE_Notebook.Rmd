@@ -7,15 +7,22 @@ output:
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 library(dplyr)
-renfeDF <- read.csv(file = "~/Documents/GitHub/AVE-Study/renfe.csv")
+library(lubridate)
+renfeDF <- read.csv(file="~/Documents/GitHub/AVE-Study/renfe.csv")
 renfeDF <- na.omit(renfeDF) 
 renfeDF <- filter(renfeDF, price != 0)
-attach(renfeDF)
+renfeDF$insert_date <- ymd_hms(renfeDF$insert_date)
+renfeDF$start_date <- ymd_hms(renfeDF$start_date)
+renfeDF$end_date <- ymd_hms(renfeDF$end_date)
+
+```
+```{r paged.print=TRUE}
+renfeDF
 ```
 
 ```{r paged.print=TRUE}
 library(psych)
-describe(price)
+describe(renfeDF$price)
 ```
 
 En este primer analisis podemos determinar la media, mediana, deviacion estandar, kurtosis y el rango de los datos sin discriminar ninguna variable cualitativa. Podemos ver que la mediana de los precios es 58,15 Euros y que el maximo de todos los datos es 342 Euros.
@@ -27,6 +34,9 @@ describeBy(renfeDF$price, renfeDF$train_type)
 ```
 ```{r paged.print=FALSE}
 describeBy(renfeDF$price, renfeDF$train_class)
+```
+```{r paged.print=FALSE}
+describeBy(renfeDF$price, months(as.Date(renfeDF$start_date)))
 ```
 
 A continuacion vamos a utilizar la libreria fitdistrplus para ver si los datos se pueden asemejar a una distribucion de datos conocida. Para eso utilizamos el comando descdist que nos presenta un grafico de Cullen y Frey.
@@ -61,3 +71,17 @@ plotNormalHistogram(logPrice)
 ```
 
 Podemos ver que excepto un par de valores que sobresalen por la curva normal, el conjunto de datos se comporta como una curva normal.
+
+```{r message=FALSE, warning=FALSE}
+library(car)
+qqPlot(renfeDF[sample(nrow(renfeDF), 100000),]$price)
+```
+
+Haciendo el Q-Q plot vemos que hay muchos valores que no se asemejan a la recta normal, lo cual concuerda con las previas conclusiones de que los datos de precio, no se asemejan a una distribucion normal. En cambio si repetimos este mismo grafico con una transformacion logaritmica obtenemos unos resultados que se pueden aproximar a una normal. Para ver con mas precision los datos extraemos 100 filas de los datos de manera aleatoria por lo que hacemos 3 veces el mismo grafico para asegurar que los datos de verdad se asemejan a una normal.
+
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE}
+qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
+qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
+qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
+```
