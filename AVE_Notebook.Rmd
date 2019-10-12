@@ -17,7 +17,7 @@ renfeDF$end_date <- ymd_hms(renfeDF$end_date)
 
 ```
 
-Intro
+En el siguiente documento se va a llevar a cabo un análisis de los datos sobre el ajuste de los precios a lo largo del tiempo que van adoptando los tiques del Renfe AVE, según cambia la oferta y demanda.
 
 Para visualizar como son los datos a analizar, usamos una entrada aleatoria a los datos recuperando 10 filas aleatorias.
 
@@ -98,3 +98,53 @@ qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
 qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
 qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
 ```
+
+Vamos a ver la cantidad de viajes en cada mes 
+
+```{r}
+
+numOfTripsApril <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "April" ))
+numOfTripsApril <- numOfTripsApril$n
+numOfTrips <- numOfTripsApril
+
+numOfTripsAugust <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "August" ))
+numOfTripsAugust <- numOfTripsAugust$n
+numOfTrips <- c(numOfTrips, numOfTripsAugust)
+
+numOfTripsJuly <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "July" ))
+numOfTripsJuly <- numOfTripsJuly$n
+numOfTrips <- c(numOfTrips, numOfTripsJuly)
+
+numOfTripsJune <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "June" ))
+numOfTripsJune <- numOfTripsJune$n
+numOfTrips <- c(numOfTrips, numOfTripsJune)
+
+numOfTripsMay <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "May" ))
+numOfTripsMay <- numOfTripsMay$n
+numOfTrips <- c(numOfTrips, numOfTripsMay)
+
+numOfTripsOctober <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "October" ))
+numOfTripsOctober <- numOfTripsOctober$n
+numOfTrips <- c(numOfTrips, numOfTripsOctober)
+
+numOfTripsSeptember <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "September" ))
+numOfTripsSeptember <- numOfTripsSeptember$n
+numOfTrips <- c(numOfTrips, numOfTripsSeptember)
+
+tempDF <- data.frame(numOfTrips, c("April", "August", "July", "June", "May", "October", "September"))
+library(tidyverse)
+tempDF <- tempDF %>% rename(months=c..April....August....July....June....May....October....September..)
+
+h1 <- ggplot(data=tempDF, aes(x=months, y=numOfTrips, color=months)) +
+  geom_bar(stat="identity", fill="gray86")
+h1 <- h1 + theme_minimal()
+h1 <- h1 + ggtitle("Distribucion de Viajes segun el Mes")
+h1 <- h1 + labs(y= "Numero de Viajes", x= "", colour="", fill="")
+h1
+
+
+
+
+```
+
+
