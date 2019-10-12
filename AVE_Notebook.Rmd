@@ -164,12 +164,12 @@ h1 <- h1 + labs(y= "Numero de Viajes", x= "", colour="", fill="")
 h1
 
 
-h1 <- ggplot(data=tempDF, aes(x=months, y=medianPrice, color=months)) +
+h3 <- ggplot(data=tempDF, aes(x=months, y=medianPrice, color=months)) +
   geom_bar(stat="identity", fill="gray86")
-h1 <- h1 + theme_minimal()
-h1 <- h1 + ggtitle("Precio mediano de los Viajes segun el Mes")
-h1 <- h1 + labs(y= "Precio mediano", x= "", colour="", fill="")
-h1
+h3 <- h3 + theme_minimal()
+h3 <- h3 + ggtitle("Precio mediano de los Viajes segun el Mes")
+h3 <- h3 + labs(y= "Precio mediano", x= "", colour="", fill="")
+h3
 
 
 yes <- renfeDF[sample(nrow(renfeDF), 500),]
