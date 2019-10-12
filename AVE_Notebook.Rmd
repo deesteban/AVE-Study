@@ -106,35 +106,55 @@ Vamos a ver la cantidad de viajes en cada mes
 
 numOfTripsApril <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "April" ))
 numOfTripsApril <- numOfTripsApril$n
+renfeDFApril <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "April")
+medianApril <- median(renfeDFApril$price)
 numOfTrips <- numOfTripsApril
+
 
 numOfTripsAugust <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "August" ))
 numOfTripsAugust <- numOfTripsAugust$n
+renfeDFAugust <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "August")
+medianAugust <- median(renfeDFAugust$price)
 numOfTrips <- c(numOfTrips, numOfTripsAugust)
+
 
 numOfTripsJuly <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "July" ))
 numOfTripsJuly <- numOfTripsJuly$n
+renfeDFJuly <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "July")
+medianJuly <- median(renfeDFJuly$price)
 numOfTrips <- c(numOfTrips, numOfTripsJuly)
 
 numOfTripsJune <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "June" ))
 numOfTripsJune <- numOfTripsJune$n
+renfeDFJune <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "June")
+medianJune <- median(renfeDFJune$price)
 numOfTrips <- c(numOfTrips, numOfTripsJune)
+
 
 numOfTripsMay <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "May" ))
 numOfTripsMay <- numOfTripsMay$n
+renfeDFMay <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "May")
+medianMay <- median(renfeDFMay$price)
 numOfTrips <- c(numOfTrips, numOfTripsMay)
 
 numOfTripsOctober <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "October" ))
 numOfTripsOctober <- numOfTripsOctober$n
+renfeDFOctober <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "October")
+medianOctober <- median(renfeDFOctober$price)
 numOfTrips <- c(numOfTrips, numOfTripsOctober)
 
 numOfTripsSeptember <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "September" ))
 numOfTripsSeptember <- numOfTripsSeptember$n
+renfeDFSeptember <- renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "September")
+medianSeptember <- median(renfeDFSeptember$price)
 numOfTrips <- c(numOfTrips, numOfTripsSeptember)
 
-tempDF <- data.frame(numOfTrips, c("April", "August", "July", "June", "May", "October", "September"))
+tempDF <- data.frame(numOfTrips, c("April", "August", "July", "June", "May", "October", "September"), c(medianApril,medianAugust,medianJuly,medianJune,medianMay,medianOctober,medianSeptember))
 library(tidyverse)
 tempDF <- tempDF %>% rename(months=c..April....August....July....June....May....October....September..)
+tempDF <- tempDF %>% rename(medianPrice=c.medianApril..medianAugust..medianJuly..medianJune..medianMay..)
+
+
 
 h1 <- ggplot(data=tempDF, aes(x=months, y=numOfTrips, color=months)) +
   geom_bar(stat="identity", fill="gray86")
@@ -144,11 +164,20 @@ h1 <- h1 + labs(y= "Numero de Viajes", x= "", colour="", fill="")
 h1
 
 
+h1 <- ggplot(data=tempDF, aes(x=months, y=medianPrice, color=months)) +
+  geom_bar(stat="identity", fill="gray86")
+h1 <- h1 + theme_minimal()
+h1 <- h1 + ggtitle("Precio mediano de los Viajes segun el Mes")
+h1 <- h1 + labs(y= "Precio mediano", x= "", colour="", fill="")
+h1
+
+
 yes <- renfeDF[sample(nrow(renfeDF), 500),]
 h2 <- ggplot(yes)
 h2 <- h2 + geom_point(aes(x=price,y=train_class,color=fare))
 h2 <- h2 + labs(y= "", x= "Precio", colour="", fill="")
 h2
+
 
 
 
