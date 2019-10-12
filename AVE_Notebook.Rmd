@@ -23,6 +23,7 @@ Para visualizar como son los datos a analizar, usamos una entrada aleatoria a lo
 
 ```{r paged.print=TRUE}
 renfeDF[sample(nrow(renfeDF), 10),]
+reducedRenfeDF <- renfeDF[sample(nrow(renfeDF), 10000),]
 ```
 
 ```{r paged.print=TRUE}
@@ -141,6 +142,13 @@ h1 <- h1 + theme_minimal()
 h1 <- h1 + ggtitle("Distribucion de Viajes segun el Mes")
 h1 <- h1 + labs(y= "Numero de Viajes", x= "", colour="", fill="")
 h1
+
+
+yes <- renfeDF[sample(nrow(renfeDF), 500),]
+h2 <- ggplot(yes)
+h2 <- h2 + geom_point(aes(x=price,y=train_class,color=fare))
+h2 <- h2 + labs(y= "", x= "Precio", colour="", fill="")
+h2
 
 
 
