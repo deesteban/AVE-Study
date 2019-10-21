@@ -102,7 +102,7 @@ qqPlot(log(renfeDF[sample(nrow(renfeDF), 100),]$price))
 
 Vamos a ver la cantidad de viajes en cada mes 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 numOfTripsApril <- count(renfeDF %>% filter(months(as.Date(renfeDF$start_date)) == "April" ))
 numOfTripsApril <- numOfTripsApril$n
@@ -184,4 +184,84 @@ h2
 
 ```
 
+
+```{r}
+library(polycor)
+hetcor(tempDF)
+```
+Si r=0.476 Algunos puntos están cerca de la línea, pero otros puntos están lejos de ella, lo que indica que solo existe una relación lineal moderada entre las variables.
+
+Vemos que la variable mes afecta mucho mas a la variable precio que la variable numero de viajes.
+
+```{r}
+reducedRenfeDF2 <- data.frame(reducedRenfeDF$origin,reducedRenfeDF$price)
+hetcor(reducedRenfeDF2)
+```
+
+Vemos que no hay correlacion entre el origen y el precio, ni el destino y el precio.
+
+```{r}
+reducedRenfeDF2 <- data.frame(reducedRenfeDF$destination,reducedRenfeDF$price)
+hetcor(reducedRenfeDF2)
+reducedRenfeDF2 <- data.frame(reducedRenfeDF$destination,reducedRenfeDF$price)
+hetcor(reducedRenfeDF2)
+```
+
+
+
+```{r}
+library(ggmap)
+test <- paste(renfeDF$origin,renfeDF$destination)
+test <- unique(test)
+register_google(key = "AIzaSyATCIAhLnl8528ABNv0wynPT_ifSp_zMEg")
+test2 <- str_split(test, " ")
+
+cont <- 1
+vectorkm <- c(seq(length(test2)))
+while (cont <= length(test2))
+{
+  it <- test2[[cont]]
+  origen <- it[1]
+  origen <- paste(origen, ", Spain")
+  destino <- it[2]
+  destino <- paste(destino, ", Spain")
+  dist <- mapdist(from = origen, to = destino)
+  vectorkm[cont] <- dist$km
+  cont <- cont + 1 
+}
+
+distances<- data.frame (test,vectorkm)
+
+
+cont <- 1
+tempa <- data.frame()
+while(cont <= length(distances$test))
+{
+  
+  
+  temp<-renfeDF %>% filter(paste(renfeDF$origin,renfeDF$destination)==test[cont])
+  temp$distance=distances$vectorkm[cont]
+  tempa <- rbind(tempa,temp)
+  cont <- cont + 1
+}
+
+
+renfeDF <- tempa
+remove(tempa)
+reducedRenfeDF <- renfeDF[sample(nrow(renfeDF), 10000),]
+h5 <- ggplot(reducedRenfeDF)
+h5 <- h5 + geom_point(aes(x=price,y=distance, colour=train_type))
+h5 <- h5 + geom_smooth(method= "lm" ,aes(x=price,y=distance))
+h5
+
+h6 <- ggplot(reducedRenfeDF)
+h6 <- h6 + geom_point(aes(x=price,y=distance, colour=train_type))
+h6 <- h6 + geom_smooth(aes(x=price,y=distance))
+h6
+
+
+
+
+
+```
 
