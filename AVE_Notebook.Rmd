@@ -213,7 +213,6 @@ hetcor(reducedRenfeDF2)
 library(ggmap)
 test <- paste(renfeDF$origin,renfeDF$destination)
 test <- unique(test)
-register_google(key = "AIzaSyATCIAhLnl8528ABNv0wynPT_ifSp_zMEg")
 test2 <- str_split(test, " ")
 
 cont <- 1
