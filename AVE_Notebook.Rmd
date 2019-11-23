@@ -543,9 +543,6 @@ p <- ggplot(temp1, aes(monthweek, weekdayf, fill = temp1$mdprices)) +
 
 p
 
-library(bdvis)
-
-
 
 ```
 
