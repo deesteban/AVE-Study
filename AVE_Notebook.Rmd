@@ -3,6 +3,7 @@ title: "AVE_Notebook"
 output:
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
@@ -160,13 +161,17 @@ h1 <- ggplot(data=tempDF, aes(x=months, y=numOfTrips, color=months)) +
   geom_bar(stat="identity", fill="gray86")
 h1 <- h1 + theme_minimal()
 h1 <- h1 + ggtitle("Distribucion de Viajes segun el Mes")
+h1 <- h1 + geom_hline(yintercept=653478,linetype="dashed",color="red")
 h1 <- h1 + labs(y= "Numero de Viajes", x= "", colour="", fill="")
 h1
+
+
 
 
 h3 <- ggplot(data=tempDF, aes(x=months, y=medianPrice, color=months)) +
   geom_bar(stat="identity", fill="gray86")
 h3 <- h3 + theme_minimal()
+h3 <- h3 + geom_hline(yintercept=53.4,linetype="dashed",color="red")
 h3 <- h3 + ggtitle("Precio mediano de los Viajes segun el Mes")
 h3 <- h3 + labs(y= "Precio mediano", x= "", colour="", fill="")
 h3
@@ -213,7 +218,7 @@ hetcor(reducedRenfeDF2)
 library(ggmap)
 test <- paste(renfeDF$origin,renfeDF$destination)
 test <- unique(test)
-register_google(key = "AIzaSyATCIAhLnl8528ABNv0wynPT_ifSp_zMEg")
+register_google(key = "AIzaSyBtYqHr5ATL0s8N4BudEH_lS5dGnhV4NNw")
 test2 <- str_split(test, " ")
 
 cont <- 1
@@ -259,9 +264,313 @@ h6 <- h6 + geom_point(aes(x=price,y=distance, colour=train_type))
 h6 <- h6 + geom_smooth(aes(x=price,y=distance))
 h6
 
+```
 
 
+Se va a mostrar un scaterplot de la distancia frente al precio para contemplar la distribución que siguen inicialmente:
 
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+reducedRenfeDF <- renfeDF[sample(nrow(renfeDF), 500000),]
+
+#80& son entrenamiento y 20% test
+set.seed(123)
+training.samples <- reducedRenfeDF$price %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- reducedRenfeDF[training.samples, ]
+test.data <- reducedRenfeDF[-training.samples, ]
+
+ggplot(train.data, aes(distance, price) ) +
+  geom_point() +
+  stat_summary(fun.y=mean, colour="red", geom="line")
+```
+
+Se puede contemplar cómo no forman una distribución lineal, por tanto, se van a realizar modelos de regresión no lineal, para ver el cambio. Se comenzará utilizando una función logarítmica, ya que, se vio anteriormente que se aproximaba el precio a la logarítmica:
+
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+set.seed(123)
+training.samples <- reducedRenfeDF$price %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- reducedRenfeDF[training.samples, ]
+test.data <- reducedRenfeDF[-training.samples, ]
+
+# Build the model
+model <- lm(price ~ log(distance), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(
+  RMSE = RMSE(predictions, test.data$price),
+  R2 = R2(predictions, test.data$price)
+)
+
+ggplot(train.data, aes(distance, price) ) +
+  geom_point() +
+  stat_summary(fun.y=mean, colour="red", geom="line")
 
 ```
+
+Ahora polynomial
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+
+set.seed(123)
+training.samples <- reducedRenfeDF$price %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- reducedRenfeDF[training.samples, ]
+test.data <- reducedRenfeDF[-training.samples, ]
+# Build the model
+model <- lm(price ~ poly(distance, 5, raw = TRUE), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(
+  RMSE = RMSE(predictions, test.data$price),
+  R2 = R2(predictions, test.data$price)
+)
+
+ggplot(train.data, aes(distance, price) ) +
+  geom_point() +
+  stat_smooth(method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+```
+
+```{r}
+library(lubridate)
+reducedRenfeDF$insert_date <- ymd_hms(reducedRenfeDF$insert_date)
+reducedRenfeDF$start_date <- ymd_hms(reducedRenfeDF$start_date)
+reducedRenfeDF$end_date <- ymd_hms(reducedRenfeDF$end_date)
+
+```
+
+Como se vio anteriormente, la variable precio tiene poca relación lineal con el resto de variables. A continuación, se va a mostrar un scaterplot del precio con todas las variables, para ver una representación más clara del suceso anterior:
+
+```{r}
+
+library(ggplot2)
+library(tidyverse)
+library(caret)
+library(grid)
+theme_set(theme_classic())
+
+#discretizacion de variables nominales
+must_convert<-sapply(reducedRenfeDF,is.factor)       # logical vector telling if a variable needs to be displayed as numeric
+renfeDF2<-sapply(reducedRenfeDF[,must_convert],unclass)    # data.frame of all categorical variables now displayed as numeric
+reducedRenfeDF2<-cbind(reducedRenfeDF[,!must_convert],renfeDF2)        # complete data.frame with all variables put together
+
+
+#60& son entrenamiento y 40% test
+set.seed(123)
+training.samples <- reducedRenfeDF2$price %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- reducedRenfeDF2[training.samples, ]
+test.data <- reducedRenfeDF2[-training.samples, ]
+
+remove(renfeDF2)
+remove(reducedRenfeDF2)
+
+plot1 <- ggplot(train.data, aes(x=insert_date, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red')
+
+plot2 <- ggplot(train.data, aes(x=origin, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+plot3 <- ggplot(train.data, aes(x=destination, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+plot4 <- ggplot(train.data, aes(x=start_date, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red')
+
+plot5 <- ggplot(train.data, aes(x=end_date, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red')
+
+plot6 <- ggplot(train.data, aes(x=train_type, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+plot7 <- ggplot(train.data, aes(x=train_class, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+plot8 <- ggplot(train.data, aes(x=fare, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+plot9 <- ggplot(train.data, aes(x=distance, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_summary(fun.y=mean, colour="red", geom="line")
+
+library(gridExtra)
+grid.arrange(plot1, plot2, plot3, ncol=3, nrow=1)
+grid.arrange(plot4, plot5, plot6, ncol=3, nrow=1)
+grid.arrange(plot7, plot8, plot9, ncol=3, nrow=1)
+```
+
+Se puede contemplar cómo no forman una distribución lineal, por tanto, se van a realizar modelos de regresión no lineal, para ver el cambio. Se comenzará utilizando una función logarítmica, ya que, se vio anteriormente que se aproximaba el precio a la logarítmica:
+
+
+```{r}
+
+library(ggplot2)
+library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+#discretizacion de variables nominales
+must_convert<-sapply(reducedRenfeDF,is.factor)       # logical vector telling if a variable needs to be displayed as numeric
+renfeDF2<-sapply(reducedRenfeDF[,must_convert],unclass)    # data.frame of all categorical variables now displayed as numeric
+reducedRenfeDF2<-cbind(reducedRenfeDF[,!must_convert],renfeDF2)        # complete data.frame with all variables put together
+
+
+#60& entrenamiento y 20% test
+set.seed(123)
+training.samples <- reducedRenfeDF2$price %>%
+  createDataPartition(p = 0.6, list = FALSE)
+train.data  <- reducedRenfeDF2[training.samples, ]
+test.data <- reducedRenfeDF2[-training.samples, ]
+
+# Build the model
+model <- lm(price ~ log(distance), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(
+  RMSE = RMSE(predictions, test.data$price),
+  R2 = R2(predictions, test.data$price)
+)
+
+remove(renfeDF2)
+remove(reducedRenfeDF2)
+
+plot1 <- ggplot(train.data, aes(x=insert_date, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot2 <- ggplot(train.data, aes(x=origin, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot3 <- ggplot(train.data, aes(x=destination, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot4 <- ggplot(train.data, aes(x=start_date, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot5 <- ggplot(train.data, aes(x=end_date, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot6 <- ggplot(train.data, aes(x=train_type, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot7 <- ggplot(train.data, aes(x=train_class, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot8 <- ggplot(train.data, aes(x=fare, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+plot9 <- ggplot(train.data, aes(x=distance, y=price)) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ log(x))
+
+library(gridExtra)
+grid.arrange(plot1, plot2, plot3, ncol=3, nrow=1)
+grid.arrange(plot4, plot5, plot6, ncol=3, nrow=1)
+grid.arrange(plot7, plot8, plot9, ncol=3, nrow=1)
+```
+
+Ahora polynomial
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+#discretizacion de variables nominales
+must_convert<-sapply(reducedRenfeDF,is.factor)       # logical vector telling if a variable needs to be displayed as numeric
+renfeDF2<-sapply(reducedRenfeDF[,must_convert],unclass)    # data.frame of all categorical variables now displayed as numeric
+reducedRenfeDF2<-cbind(reducedRenfeDF[,!must_convert],renfeDF2)        # complete data.frame with all variables put together
+
+
+
+#60& son entrenamiento y 40% test
+set.seed(123)
+training.samples <- reducedRenfeDF2$price %>%
+  createDataPartition(p = 0.6, list = FALSE)
+train.data  <- reducedRenfeDF2[training.samples, ]
+test.data <- reducedRenfeDF2[-training.samples, ]
+
+# Build the model
+model <- lm(price ~ poly(distance, 5, raw = TRUE), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(
+  RMSE = RMSE(predictions, test.data$price),
+  R2 = R2(predictions, test.data$price)
+)
+
+remove(renfeDF2)
+remove(reducedRenfeDF2)
+
+
+
+
+plot1 <- ggplot(train.data, aes(x=origin, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+plot2 <- ggplot(train.data, aes(x=destination, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+
+plot3 <- ggplot(train.data, aes(x=train_type, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+plot4 <- ggplot(train.data, aes(x=train_class, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+plot5 <- ggplot(train.data, aes(x=fare, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+plot6 <- ggplot(train.data, aes(x=distance, y=price) ) +
+geom_point(alpha = 1/15, color = 'blue')+
+stat_smooth(color = 'Red', method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+library(gridExtra)
+grid.arrange(plot1, plot2, plot3, ncol=3, nrow=1)
+grid.arrange(plot4, plot5, plot6, ncol=3, nrow=1)
+```
+
+
+
 
